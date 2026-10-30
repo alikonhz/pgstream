@@ -582,7 +582,10 @@ func TestListener_ProcessWALEvent_TransactionMetadata(t *testing.T) {
 		},
 	}
 	l.walDataDeserialiser = func(data []byte, out any) error {
-		walData := out.(*wal.Data)
+		walData, ok := out.(*wal.Data)
+		if !ok {
+			return fmt.Errorf("unexpected wal data type: %T", out)
+		}
 		walData.Action = string(data)
 		return nil
 	}
@@ -623,7 +626,11 @@ func TestListener_ProcessWALEvent_ResetsTransactionStateForNewGeneration(t *test
 		FromStringFn: func(string) (replication.LSN, error) { return 0, nil },
 	}
 	l.walDataDeserialiser = func(data []byte, out any) error {
-		out.(*wal.Data).Action = string(data)
+		walData, ok := out.(*wal.Data)
+		if !ok {
+			return fmt.Errorf("unexpected wal data type: %T", out)
+		}
+		walData.Action = string(data)
 		return nil
 	}
 
